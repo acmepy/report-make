@@ -1,0 +1,120 @@
+:root {
+  --bg: #ffffff;
+  --text: #1f1f1f;
+  --panel: #f7f7f7;
+  --border: #d0d0d0;
+  --button-bg: #eeeeee;
+  --button-text: #1f1f1f;
+  --button-hover: #e0e0e0;
+  --toolbar-bg: #f3f3f3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #181818;
+    --text: #dddddd;
+    --panel: #252526;
+    --border: #3c3c3c;
+    --button-bg: #333333;
+    --button-text: #ffffff;
+    --button-hover: #444444;
+    --toolbar-bg: #202020;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 48px 1fr;
+  background: var(--bg);
+  color: var(--text);
+}
+
+#toolbar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  box-sizing: border-box;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+#toolbar-title {
+  font-weight: bold;
+}
+
+#workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 45% 55%;
+}
+
+#editor {
+  min-height: 0;
+  overflow: hidden;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+}
+
+.cm-editor {
+  height: 100%;
+  font-size: 14px;
+}
+
+.cm-scroller {
+  overflow: auto;
+}
+
+#viewer {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: white;
+}
+
+#btnGenerar {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--button-bg);
+  color: var(--button-text);
+  cursor: pointer;
+}
+
+#btnGenerar:hover {
+  background: var(--button-hover);
+}
+
+#toolbar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.app-version {
+  font-size: 8px;
+  padding: 2px 6px;
+  border-radius: 999px;
+
+  background: var(--button-bg);
+  color: var(--button-text);
+
+  border: 1px solid var(--border);
+}
