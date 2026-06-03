@@ -15,6 +15,8 @@ pdfMake.addVirtualFileSystem(vfs.default);
 import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 
+import { fecha, numero } from "./formatters.js";
+
 const ejemplo = `{
   content: [
     { text: 'Reporte de prueba', style: 'header' },
@@ -60,7 +62,11 @@ async function generarPdf() {
 
   try {
     const codigo = editor.state.doc.toString();
-    const docDefinition = new Function(`${codigo} return dd;`)();
+    const docDefinition = new Function(
+      "numero",
+      "fecha",
+      `${codigo} return dd;`,
+    )(numero, fecha);
 
     const pdf = pdfMake.createPdf(docDefinition);
     const url = await pdf.getDataUrl();
