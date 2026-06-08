@@ -61,8 +61,9 @@ async function generarPdf() {
   const currentVersion = ++versionGen;
 
   try {
-    const codigo = editor.state.doc.toString();
-    if (codigo.at(-1) !== ";") codigo += ";";
+    let codigo = editor.state.doc.toString();
+    if (codigo.at(-1) != ";") codigo += ";";
+    console.log("Generando PDF con código:", codigo);
     const docDefinition = new Function(
       "numero",
       "fecha",
