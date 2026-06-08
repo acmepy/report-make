@@ -62,6 +62,7 @@ async function generarPdf() {
 
   try {
     const codigo = editor.state.doc.toString();
+    if (codigo.at(-1) !== ";") codigo += ";";
     const docDefinition = new Function(
       "numero",
       "fecha",
