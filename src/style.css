@@ -58,14 +58,40 @@ body {
 #workspace {
   min-height: 0;
   display: grid;
-  grid-template-columns: 45% 55%;
+  grid-template-columns: minmax(220px, var(--editor-width, 45%)) 8px minmax(320px, 1fr);
 }
 
 #editor {
   min-height: 0;
   overflow: hidden;
   background: var(--panel);
+}
+
+#workspace-divider {
+  position: relative;
+  cursor: col-resize;
+  touch-action: none;
+  background: var(--toolbar-bg);
+  border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
+}
+
+#workspace-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 36px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  background: var(--border);
+}
+
+#workspace-divider:hover,
+#workspace-divider:focus-visible {
+  background: var(--button-hover);
+  outline: none;
 }
 
 .cm-editor {

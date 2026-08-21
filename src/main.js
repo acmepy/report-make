@@ -51,6 +51,46 @@ const editor = new EditorView({
 
 const viewer = document.querySelector("#viewer");
 const btnGenerar = document.querySelector("#btnGenerar");
+const workspace = document.querySelector("#workspace");
+const workspaceDivider = document.querySelector("#workspace-divider");
+
+function setEditorWidth(clientX) {
+  const bounds = workspace.getBoundingClientRect();
+  const dividerWidth = workspaceDivider.getBoundingClientRect().width;
+  const minEditorWidth = 220;
+  const minViewerWidth = 320;
+  const maxEditorWidth = bounds.width - dividerWidth - minViewerWidth;
+  const editorWidth = Math.min(
+    Math.max(clientX - bounds.left, minEditorWidth),
+    maxEditorWidth,
+  );
+  const editorPercentage = (editorWidth / bounds.width) * 100;
+
+  workspace.style.setProperty("--editor-width", `${editorPercentage}%`);
+  workspaceDivider.setAttribute("aria-valuenow", editorPercentage.toFixed(0));
+}
+
+workspaceDivider.addEventListener("pointerdown", (event) => {
+  workspaceDivider.setPointerCapture(event.pointerId);
+  setEditorWidth(event.clientX);
+});
+
+workspaceDivider.addEventListener("pointermove", (event) => {
+  if (workspaceDivider.hasPointerCapture(event.pointerId)) {
+    setEditorWidth(event.clientX);
+  }
+});
+
+workspaceDivider.addEventListener("keydown", (event) => {
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+
+  event.preventDefault();
+  const bounds = workspace.getBoundingClientRect();
+  const currentWidth = workspaceDivider.previousElementSibling.getBoundingClientRect().width;
+  const step = event.shiftKey ? 50 : 10;
+  const direction = event.key === "ArrowLeft" ? -1 : 1;
+  setEditorWidth(bounds.left + currentWidth + direction * step);
+});
 
 function getCodigo() {
   return editor.state.doc.toString();
