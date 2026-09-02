@@ -6,13 +6,13 @@
     <link rel="icon" type="image/svg+xml" href="/report/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Report Make</title>
-    <script type="module" crossorigin src="/report/assets/index-BcMnsOE-.js"></script>
+    <script type="module" crossorigin src="/report/assets/index-DfS4I56f.js"></script>
     <link rel="modulepreload" crossorigin href="/report/assets/rolldown-runtime-Bh1tDfsg.js">
     <link rel="modulepreload" crossorigin href="/report/assets/codemirror-CCrc_tIV.js">
     <link rel="modulepreload" crossorigin href="/report/assets/vendor-B0OaCWiV.js">
     <link rel="modulepreload" crossorigin href="/report/assets/pdfmake-bv7Ij9ry.js">
     <link rel="modulepreload" crossorigin href="/report/assets/pdfmake-fonts-Cfh1-GXb.js">
-    <link rel="stylesheet" crossorigin href="/report/assets/index-CvIyXQky.css">
+    <link rel="stylesheet" crossorigin href="/report/assets/index-B09UmpEb.css">
   </head>
 
   <body>
@@ -36,7 +36,16 @@
           aria-valuemax="80"
           aria-valuenow="45"
           tabindex="0"></div>
-        <iframe id="viewer"></iframe>
+        <div id="preview-column">
+          <iframe id="viewer"></iframe>
+          <section id="console-panel" aria-label="Salida de consola">
+            <div id="console-header">
+              <span>Consola</span>
+              <button id="btnLimpiarConsola" type="button">Limpiar</button>
+            </div>
+            <pre id="console-output" aria-live="polite"></pre>
+          </section>
+        </div>
       </div>
     </div>
 

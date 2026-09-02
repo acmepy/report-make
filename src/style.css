@@ -105,9 +105,72 @@ body {
 
 #viewer {
   width: 100%;
-  height: 100%;
+  min-height: 0;
+  flex: 1;
   border: 0;
   background: white;
+}
+
+#preview-column {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+}
+
+#console-panel {
+  height: 180px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+  background: #111315;
+  color: #d7e0e5;
+  font: 12px/1.45 Consolas, "Cascadia Code", monospace;
+}
+
+#console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  color: #ffffff;
+  background: #202428;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+#btnLimpiarConsola {
+  padding: 3px 8px;
+  border: 1px solid #596168;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+#btnLimpiarConsola:hover {
+  background: #343a40;
+}
+
+#console-output {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.console-error {
+  color: #ff8f8f;
+}
+
+.console-warn {
+  color: #ffd479;
 }
 
 #btnGenerar {

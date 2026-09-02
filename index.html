@@ -29,7 +29,16 @@
           aria-valuemax="80"
           aria-valuenow="45"
           tabindex="0"></div>
-        <iframe id="viewer"></iframe>
+        <div id="preview-column">
+          <iframe id="viewer"></iframe>
+          <section id="console-panel" aria-label="Salida de consola">
+            <div id="console-header">
+              <span>Consola</span>
+              <button id="btnLimpiarConsola" type="button">Limpiar</button>
+            </div>
+            <pre id="console-output" aria-live="polite"></pre>
+          </section>
+        </div>
       </div>
     </div>
 

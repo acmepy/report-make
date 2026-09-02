@@ -1,5 +1,38 @@
 import "./style.css";
 
+const consoleOutput = document.querySelector("#console-output");
+const clearConsoleButton = document.querySelector("#btnLimpiarConsola");
+
+function formatConsoleValue(value) {
+  if (typeof value === "string") return value;
+  if (value instanceof Error) return value.stack || value.message;
+  try {
+    const formatted = JSON.stringify(value, null, 2);
+    return formatted === undefined ? String(value) : formatted;
+  } catch {
+    return String(value);
+  }
+}
+
+function installConsolePanel() {
+  for (const method of ["log", "info", "warn", "error", "debug"]) {
+    const original = console[method].bind(console);
+    console[method] = (...values) => {
+      original(...values);
+      const line = document.createElement("div");
+      line.className = `console-${method}`;
+      line.textContent = `[${method}] ${values.map(formatConsoleValue).join(" ")}`;
+      consoleOutput.append(line);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    };
+  }
+}
+
+installConsolePanel();
+clearConsoleButton.addEventListener("click", () => {
+  consoleOutput.replaceChildren();
+});
+
 import { oneDark } from "@codemirror/theme-one-dark";
 const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
