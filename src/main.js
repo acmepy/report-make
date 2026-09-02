@@ -17,7 +17,7 @@ import { javascript } from "@codemirror/lang-javascript";
 
 import { fecha, numero } from "./formatters.js";
 
-const ejemplo = `{
+const ejemplo = `dd = {
   content: [
     { text: 'Reporte de prueba', style: 'header' },
     'Este PDF fue generado offline con pdfmake y CodeMirror.'
@@ -111,10 +111,16 @@ async function generarPdf() {
     )(numero, fecha);
 
     const pdf = pdfMake.createPdf(docDefinition);
-    const url = await pdf.getDataUrl();
+    const blob = await pdf.getBlob();
+    const url = URL.createObjectURL(blob);
 
     if (currentVersion === versionGen) {
+      const previousUrl = viewer.dataset.url;
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      viewer.dataset.url = url;
       viewer.src = url;
+    } else {
+      URL.revokeObjectURL(url);
     }
   } catch (error) {
     console.error(error);
