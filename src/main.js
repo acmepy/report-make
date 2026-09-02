@@ -86,6 +86,43 @@ const viewer = document.querySelector("#viewer");
 const btnGenerar = document.querySelector("#btnGenerar");
 const workspace = document.querySelector("#workspace");
 const workspaceDivider = document.querySelector("#workspace-divider");
+const consoleDivider = document.querySelector("#console-divider");
+const previewColumn = document.querySelector("#preview-column");
+
+function setConsoleHeight(clientY) {
+  const bounds = previewColumn.getBoundingClientRect();
+  const dividerHeight = consoleDivider.getBoundingClientRect().height;
+  const minConsoleHeight = 96;
+  const minViewerHeight = 120;
+  const consoleHeight = Math.min(
+    Math.max(bounds.bottom - clientY, minConsoleHeight),
+    bounds.height - dividerHeight - minViewerHeight,
+  );
+
+  previewColumn.style.setProperty("--console-height", `${consoleHeight}px`);
+  consoleDivider.setAttribute("aria-valuenow", consoleHeight.toFixed(0));
+}
+
+consoleDivider.addEventListener("pointerdown", (event) => {
+  consoleDivider.setPointerCapture(event.pointerId);
+  setConsoleHeight(event.clientY);
+});
+
+consoleDivider.addEventListener("pointermove", (event) => {
+  if (consoleDivider.hasPointerCapture(event.pointerId)) {
+    setConsoleHeight(event.clientY);
+  }
+});
+
+consoleDivider.addEventListener("keydown", (event) => {
+  if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+
+  event.preventDefault();
+  const panelBounds = document.querySelector("#console-panel").getBoundingClientRect();
+  const step = event.shiftKey ? 50 : 10;
+  const direction = event.key === "ArrowUp" ? 1 : -1;
+  setConsoleHeight(panelBounds.top + direction * step);
+});
 
 function setEditorWidth(clientX) {
   const bounds = workspace.getBoundingClientRect();
