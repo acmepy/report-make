@@ -1,0 +1,5 @@
+{
+  "name": "Ejemplo",
+  "code": "{ content: [{ text: data.titulo, fontSize: 20 }, 'Hola ' + data.nombre] };",
+  "data": { "titulo": "Reporte de prueba", "nombre": "María" }
+}

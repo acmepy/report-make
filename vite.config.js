@@ -2,7 +2,10 @@ import { defineConfig } from "vite";
 import pkg from "./package.json";
 
 export default defineConfig({
-  base: "/report/",
+  base: "./",
+  server: {
+    proxy: { '/api': { target: 'http://localhost:3000', rewrite: p => `/report${p}` } },
+  },
 
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),

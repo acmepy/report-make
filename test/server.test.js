@@ -1,0 +1,62 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import express from 'express';
+import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { reportMake } from '../server/index.js';
+
+test('montaje, archivos, revisiones y eliminación', async t => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'report-make-test-'));
+  const app = express();
+  app.use('/nested/report', reportMake({ templatesDir: directory }));
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); await rm(directory, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}/nested/report`;
+  const request = (url, method = 'GET', body) => fetch(base + url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const redirected = await fetch(base, { redirect: 'manual' });
+  assert.equal(redirected.status, 308);
+  const html = await (await request('/')).text();
+  assert.match(html, /\.\/assets\//);
+  assert.deepEqual(await (await request('/api/templates')).json(), []);
+  const value = { name: 'Factura', code: '{ content: [data.saludo] };', data: { saludo: 'Hola' }, revision: null };
+  const created = await request('/api/templates/factura', 'PUT', value);
+  assert.equal(created.status, 201);
+  const record = await created.json();
+  assert.equal((await request('/api/templates/factura', 'PUT', value)).status, 409);
+  const updated = await request('/api/templates/factura', 'PUT', { ...record, data: { saludo: 'Nuevo' } });
+  assert.equal(updated.status, 200);
+  assert.equal(JSON.parse(await readFile(path.join(directory, 'factura.json'), 'utf8')).data.saludo, 'Nuevo');
+  assert.equal((await request('/api/templates/factura', 'DELETE', record)).status, 409);
+  const latest = await updated.json();
+  assert.equal((await request('/api/templates/factura', 'DELETE', latest)).status, 204);
+  assert.equal((await request('/api/templates/factura', 'PUT', latest)).status, 409);
+  assert.equal((await request('/api/templates/bad.name', 'PUT', value)).status, 400);
+  assert.equal((await request('/api/templates/invalid', 'PUT', { name: 'x' })).status, 400);
+  await writeFile(path.join(directory, 'external.json'), JSON.stringify(value));
+  const before = await (await request('/api/templates/external')).json();
+  await writeFile(path.join(directory, 'external.json'), JSON.stringify({ ...value, name: 'Changed' }));
+  assert.equal((await request('/api/templates/external', 'PUT', before)).status, 409);
+  const attempts = await Promise.all([
+    request('/api/templates/factura-contado', 'PUT', { ...value, name: 'Factura contado' }),
+    request('/api/templates/factura-contado', 'PUT', { ...value, name: 'FÁCTURA  CONTADO' }),
+  ]);
+  assert.deepEqual(attempts.map(r => r.status).sort(), [201, 409]);
+  assert.equal((await request('/api/templates/uuid', 'PUT', { ...value, name: 'Otro' })).status, 400);
+  await writeFile(path.join(directory, 'legacy-id.json'), JSON.stringify({ ...value, name: 'Nombre antiguo' }));
+  assert.equal((await request('/api/templates/nombre-antiguo', 'PUT', { ...value, name: 'NÓMBRE ANTIGUO' })).status, 409);
+  const oldRecord = await (await request('/api/templates/legacy-id')).json();
+  assert.equal((await request('/api/templates/legacy-id', 'PUT', { ...oldRecord, data: {} })).status, 200);
+  const renameSource = await (await request('/api/templates/legacy-id')).json();
+  assert.equal((await request('/api/templates/legacy-id', 'PUT', { ...renameSource, name: 'Factura contado' })).status, 409);
+  const renamed = await request('/api/templates/legacy-id', 'PUT', { ...renameSource, name: 'Nombre nuevo' });
+  assert.equal(renamed.status, 200);
+  const renamedRecord = await renamed.json();
+  assert.equal(renamedRecord.id, 'nombre-nuevo');
+  assert.equal((await request('/api/templates/legacy-id')).status, 404);
+  assert.deepEqual(renamedRecord.data, renameSource.data);
+  assert.equal(renamedRecord.code, renameSource.code);
+  assert.equal((await request('/api/templates/legacy-id', 'PUT', renameSource)).status, 409);
+  assert.equal(JSON.parse(await readFile(path.join(directory, 'nombre-nuevo.json'), 'utf8')).name, 'Nombre nuevo');
+});

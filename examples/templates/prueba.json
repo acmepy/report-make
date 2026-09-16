@@ -1,0 +1,346 @@
+{
+  "name": "prueba",
+  "code": "{\n  pageSize: { width: 274, height: 'auto' },\n\tpageMargins: [5, 5, 5, 20], //(<, ^, >, v)\n\tdefaultStyle: { fontSize: 8 },\n\tstyles: {\n\t\theader: { fontSize: 10, bold: true },\n\t\ttableHeader: { bold: true },\n\t\tlink: { Color: '#0000ff' }\n\t},\n\tcontent: [\n\t\t//{ image: logo, width: 75, height: 75, alignment: 'center' },\n\t\t{ text: data.rDE.DE.gDatGralOpe.gEmis.dNomEmi, style: 'header', alignment: 'center' },\n\t\t{ text: 'RUC :' + data.rDE.DE.gDatGralOpe.gEmis.dRucEm, style: 'header', alignment: 'center' },\n\t\t{ text: data.rDE.DE.gDatGralOpe.gEmis.dDirEmi, alignment: 'center' },\n\t\t{ text: data.rDE.DE.gDatGralOpe.gEmis.dDesCiuEmi, alignment: 'center' },\n\t\t{ text: 'Telefono :' + data.rDE.DE.gDatGralOpe.gEmis.dTelEmi, alignment: 'center' },\n\t\t{ text: 'Correo : ' + data.rDE.DE.gDatGralOpe.gEmis.dEmailE, alignment: 'center' },\n\t\t{ text: 'Actividad Económica\\n' + data.rDE.DE.gDatGralOpe.gEmis.gActEco.map(a=>a.dDesActEco).join(`\\n`), alignment: 'center' },\n\t\t{\n\t\t\tmargin: [0, 5, 0, 5],\n\t\t\ttable: {\n\t\t\t\twidths: [255],\n\t\t\t\tbody: [\n\t\t\t\t\t[{ text: 'Timbrado No :' + data.rDE.DE.gTimb.dNumTim + ' Inicio Vig : ' + fecha(data.rDE.DE.gTimb.dFeIniT, 'DD/MM/YY'), alignment: 'center', border: [false, true, false, false] }],\n\t\t\t\t\t[{ text: 'KUDE ' + data.rDE.DE.gTimb.dDesTiDE, alignment: 'center', border: [false, false, false, false] }],\n\t\t\t\t\t[{ text: 'No : ' + data.rDE.DE.gTimb.dEst + '-' + data.rDE.DE.gTimb.dPunExp + '-' + data.rDE.DE.gTimb.dNumDoc, style: 'header', alignment: 'center', border: [false, false, false, true] }],\n\t\t\t\t]\n\t\t\t}\n\t\t},\n\t\t'Fecha Hora : ' + fecha(data.rDE.DE.gDatGralOpe.dFeEmiDE, 'DD/MM/YY HH:mm:ss'),\n\t\t'RUC/Documento No : ' + (()=>{let c = data.rDE.DE.gDatGralOpe.gDatRec; return c.iNatRec==1?c.dRucRec+'-'+c.dDVRec:c.dNumIDRec})(),\n\t\t'Nombre : ' + data.rDE.DE.gDatGralOpe.gDatRec.dNomRec,\n\t\t'Dirección :' + ((data.rDE.DE.gDatGralOpe.gDatRec.dDirRec??'').replaceAll('- Nro.Pedido:'+data.rDE.gCamFuFD.dInfAdic, '').replaceAll('- No de Ordende Compra: '+data.rDE.DE?.gCamGen?.dOrdCompra, '')??''),\n\t\t[\n\t\t\tdata.rDE.gCamFuFD.dInfAdic?'Nro Pedido : '+data.rDE.gCamFuFD.dInfAdic:false,\n\t\t\tdata.rDE.DE?.gCamGen?.dOrdCompra?'No de Orden de Compra : '+data.rDE.DE?.gCamGen?.dOrdCompra:false,\n\t\t\tdata.rDE.DE.gDatGralOpe.gDatRec?.dTelRec?'Correo : '+data.rDE.DE.gDatGralOpe.gDatRec?.dEmailRec:false,\n\t\t\tdata.rDE.DE.gDatGralOpe.gDatRec?.dTelRec?'Tel : ' + data.rDE.DE.gDatGralOpe.gDatRec?.dTelRec:false,\n        ].filter(d=>d!=false),\n\t\t'Condición de venta : ' + data.rDE.DE.gDtipDE.gCamCond.dDCondOpe,\n\t\t'Moneda : ' + data.rDE.DE.gDatGralOpe.gOpeCom.dDesMoneOpe,\n\t\t'Tipo Operación : ' + data.rDE.DE.gDatGralOpe.gOpeCom.dDesTipTra,\n\t\t{\n\t\t\ttable: {\n\t\t\t\twidths: [80, 25, 40, 85],\n\t\t\t\tbody: [[\n\t\t\t\t\t{ text: 'Codigo', border: [false, true, false, true] },\n\t\t\t\t\t{ text: 'Cant', border: [false, true, false, true], alignment: 'right' },\n\t\t\t\t\t{ text: 'PreUnit', border: [false, true, false, true], alignment: 'right' },\n\t\t\t\t\t{ text: 'Subtotal', border: [false, true, false, true], alignment: 'right' }\n\t\t\t\t]].concat(...data.rDE.DE.gDtipDE.gCamItem.map(d => [\n\t\t\t\t\t[{ text: d.dDesProSer, colSpan: 4, border: [false, false, false, false] }, '', '', ''],\n\t\t\t\t\t[\n\t\t\t\t\t\t{ text: d.dGtin??d.dCodInt, border: [false, false, false, false] },\n\t\t\t\t\t\t{ text: d.dCantProSer, alignment: 'right', border: [false, false, false, false] },\n\t\t\t\t\t\t{ text: d.gValorItem.dPUniProSer, alignment: 'right', border: [false, false, false, false] },\n\t\t\t\t\t\t{ text: d.gValorItem.dTotBruOpeItem, alignment: 'right', border: [false, false, false, false] }\n\t\t\t\t\t]\n\t\t\t\t]))\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\ttable: {\n\t\t\t\twidths: [161, 85],\n\t\t\t\tbody: [\n\t\t\t\t\t[{ text: 'IVA 5%', border: [false, true, false, false] }, { text: data.rDE.DE.gTotSub.dIVA5, alignment: 'right', border: [false, true, false, false] }],\n\t\t\t\t\t[{ text: 'IVA 10%', border: [false, false, false, false] }, { text: data.rDE.DE.gTotSub.dIVA10, alignment: 'right', border: [false, false, false, false] }],\n\t\t\t\t\t[{ text: 'Total IVA', border: [false, false, false, false] }, { text: data.rDE.DE.gTotSub.dTotIVA, alignment: 'right', border: [false, false, false, false] }],\n\t\t\t\t\t[{ text: 'Exenta', border: [false, false, false, false] }, { text: data.rDE.DE.gTotSub.dSubExe, alignment: 'right', border: [false, false, false, false] }],\n\t\t\t\t\t[{ text: 'Gravada 5%', border: [false, false, false, false] }, { text: data.rDE.DE.gTotSub.dSub5, alignment: 'right', border: [false, false, false, false] }],\n\t\t\t\t\t[{ text: 'Gravada 10%', border: [false, false, false, false] }, { text: data.rDE.DE.gTotSub.dSub10, alignment: 'right', border: [false, false, false, false] }],\n\t\t\t\t\t[{ text: 'Total a Pagar', border: [false, true, false, false], style: 'header' }, { text: data.rDE.DE.gTotSub.dTotOpe, alignment: 'right', border: [false, true, false, false], style: 'header' }],\n\t\t\t\t\t...data.rDE.DE.gDtipDE.gCamCond.gPaConEIni.map(i=>[\n\t\t\t\t\t\t{ text: i.dDesTiPag+'('+i.iTiPago+')', border: [false, false, false, false] },\n\t\t\t\t\t\t{ text: numero(Math.ceil(+i?.dMonTiPag)), border: [false, false, false, false],alignment: 'right' },\n\t\t\t\t\t]),\n\t\t\t\t\t[{ text: '', border: [false, true, false, false], style: 'header' }, { text: '', border: [false, true, false, false], style: 'header' }]\n\t\t\t\t]\n\t\t\t}\n\t\t},\n\t\t{ text: 'Consulte la validez de esta Factura electrónica con el número CDC impreso en:', alignment: 'center', margin: [0, 5, 0, 0] },\n\t\t{ text: data.rDE.gCamFuFD.dCarQR.split('/qr?')[0], link: data.rDE.gCamFuFD.dCarQR.split('/qr?')[0], decoration: 'underline', color: 'blue', alignment: 'center' },\n\t\t{ text: data.rDE.DE.$.Id, alignment: 'center' },\n\t\t{ qr: data.rDE.gCamFuFD.dCarQR, alignment: 'center', margin: [0, 10, 0, 10], fit: 150 },\n\t\t{ text: 'ESTE DOCUMENTO ES UNA REPRESENTACIÓN GRÁFICA DEL DOCUMENTO ELECTRÓNICO (XML).', alignment: 'center' },\n\t\t{ text: 'Si su documento electrónico presenta algún error, podrá solicitar la modificación dentro de las 72 horas siguientes de la emisión de este comprobante.', alignment: 'center', margin: [0, 5, 0, 0] },\n\t]\n}",
+  "data": {
+    "rDE": {
+      "dVerFor": "150",
+      "DE": {
+        "$": {
+          "Id": "01800004027014001023601422026091612289692610"
+        },
+        "dDVId": "0",
+        "dFecFirma": "2026-09-16T10:57:17",
+        "dSisFact": "1",
+        "gOpeDE": {
+          "iTipEmi": "1",
+          "dDesTipEmi": "Normal",
+          "dCodSeg": "228969261"
+        },
+        "gTimb": {
+          "iTiDE": "1",
+          "dDesTiDE": "Factura electrónica",
+          "dNumTim": "16137077",
+          "dEst": "014",
+          "dPunExp": "001",
+          "dNumDoc": "0236014",
+          "dFeIniT": "2023-01-10"
+        },
+        "gDatGralOpe": {
+          "dFeEmiDE": "2026-09-16T10:57:17",
+          "gOpeCom": {
+            "iTipTra": "1",
+            "dDesTipTra": "Venta de mercadería",
+            "iTImp": "1",
+            "dDesTImp": "IVA",
+            "cMoneOpe": "PYG",
+            "dDesMoneOpe": "Guarani",
+            "iCondAnt": "1",
+            "dDesCondAnt": "Anticipo Global"
+          },
+          "gEmis": {
+            "dRucEm": "80000402",
+            "dDVEmi": "7",
+            "iTipCont": "2",
+            "cTipReg": "8",
+            "dNomEmi": "AGRO INDUSTRIALGUARAPI S.A.",
+            "dNomFanEmi": "LACTEOS DOÑA ANGELA",
+            "dDirEmi": "AVENIDA, MCAL. LOPEZ C/ 26 DE FEBRERO - SHOPPING PINEDO(55)",
+            "dNumCas": "0",
+            "cDepEmi": "12",
+            "dDesDepEmi": "CENTRAL",
+            "cDisEmi": "164",
+            "dDesDisEmi": "SAN LORENZO",
+            "cCiuEmi": "6010",
+            "dDesCiuEmi": "SAN LORENZO",
+            "dTelEmi": "0213249097",
+            "dEmailE": "heladeria.pinedo@guarapi.com.py",
+            "dDenSuc": "HELADERIA PINEDO",
+            "gActEco": [
+              {
+                "cActEco": "10501",
+                "dDesActEco": "ELABORACIÓN DE LECHES Y PRODUCTOS LÁCTEOS"
+              },
+              {
+                "cActEco": "10502",
+                "dDesActEco": "ELABORACIÓN INDUSTRIAL DE HELADOS"
+              },
+              {
+                "cActEco": "10919",
+                "dDesActEco": "ELABORACIÓN DE OTROS PRODUCTOS DE PANADERÍA N.C.P."
+              },
+              {
+                "cActEco": "47111",
+                "dDesActEco": "COMERCIO AL POR MENOR EN HIPERMERCADOS Y SUPERMERCADOS"
+              },
+              {
+                "cActEco": "56101",
+                "dDesActEco": "RESTAURANTES Y PARRILLADAS"
+              },
+              {
+                "cActEco": "56102",
+                "dDesActEco": "ROTISERÍAS"
+              }
+            ]
+          },
+          "gDatRec": {
+            "iNatRec": "1",
+            "iTiOpe": "2",
+            "cPaisRec": "PRY",
+            "dDesPaisRe": "Paraguay",
+            "iTiContRec": "1",
+            "dRucRec": "2482405",
+            "dDVRec": "4",
+            "dNomRec": "EDGAR OSVALDO AHRENS BARRIOS",
+            "dNomFanRec": "EDGAR OSVALDO AHRENS BARRIOS",
+            "dNumCasRec": "0",
+            "dCodCliente": "0000138292"
+          }
+        },
+        "gDtipDE": {
+          "gCamFE": {
+            "iIndPres": "1",
+            "dDesIndPres": "Operación presencial"
+          },
+          "gCamCond": {
+            "iCondOpe": "1",
+            "dDCondOpe": "Contado",
+            "gPaConEIni": [
+              {
+                "iTiPago": "5",
+                "dDesTiPag": "Transferencia",
+                "dMonTiPag": "107300.0000",
+                "cMoneTiPag": "PYG",
+                "dDMoneTiPag": "Guarani"
+              }
+            ],
+            "gPagCred": {
+              "dPlazoCre": "N/A"
+            }
+          },
+          "gCamItem": [
+            {
+              "dCodInt": "15992",
+              "dGtin": "2415992000000",
+              "dDesProSer": "PLATO 25",
+              "cUniMed": "77",
+              "dDesUniMed": "UNI",
+              "dCantProSer": "1",
+              "cPaisOrig": "PRY",
+              "dDesPaisOrig": "Paraguay",
+              "gValorItem": {
+                "dPUniProSer": "25.000",
+                "dTotBruOpeItem": "25.000",
+                "gValorRestaItem": {
+                  "dDescItem": "0",
+                  "dDescGloItem": "0",
+                  "dAntPreUniIt": "0",
+                  "dAntGloPreUniIt": "0",
+                  "dTotOpeItem": "25000"
+                }
+              },
+              "gCamIVA": {
+                "iAfecIVA": "1",
+                "dDesAfecIVA": "Gravado IVA",
+                "dPropIVA": "100",
+                "dTasaIVA": "10",
+                "dBasGravIVA": "22727.27272727",
+                "dLiqIVAItem": "2272.72727273",
+                "dBasExe": "0"
+              }
+            },
+            {
+              "dCodInt": "15993",
+              "dGtin": "2415993000000",
+              "dDesProSer": "PLATO 35",
+              "cUniMed": "77",
+              "dDesUniMed": "UNI",
+              "dCantProSer": "2",
+              "cPaisOrig": "PRY",
+              "dDesPaisOrig": "Paraguay",
+              "gValorItem": {
+                "dPUniProSer": "35.000",
+                "dTotBruOpeItem": "70.000",
+                "gValorRestaItem": {
+                  "dDescItem": "0",
+                  "dDescGloItem": "0",
+                  "dAntPreUniIt": "0",
+                  "dAntGloPreUniIt": "0",
+                  "dTotOpeItem": "70000"
+                }
+              },
+              "gCamIVA": {
+                "iAfecIVA": "1",
+                "dDesAfecIVA": "Gravado IVA",
+                "dPropIVA": "100",
+                "dTasaIVA": "10",
+                "dBasGravIVA": "63636.36363636",
+                "dLiqIVAItem": "6363.63636364",
+                "dBasExe": "0"
+              }
+            },
+            {
+              "dCodInt": "16075",
+              "dGtin": "2416075000000",
+              "dDesProSer": "DELIVERY Z1",
+              "cUniMed": "77",
+              "dDesUniMed": "UNI",
+              "dCantProSer": "1",
+              "cPaisOrig": "PRY",
+              "dDesPaisOrig": "Paraguay",
+              "gValorItem": {
+                "dPUniProSer": "12.000",
+                "dTotBruOpeItem": "12.000",
+                "gValorRestaItem": {
+                  "dDescItem": "0",
+                  "dDescGloItem": "0",
+                  "dAntPreUniIt": "0",
+                  "dAntGloPreUniIt": "0",
+                  "dTotOpeItem": "12000"
+                }
+              },
+              "gCamIVA": {
+                "iAfecIVA": "1",
+                "dDesAfecIVA": "Gravado IVA",
+                "dPropIVA": "100",
+                "dTasaIVA": "10",
+                "dBasGravIVA": "10909.09090909",
+                "dLiqIVAItem": "1090.90909091",
+                "dBasExe": "0"
+              }
+            },
+            {
+              "dCodInt": "30320",
+              "dGtin": "2430320000000",
+              "dDesProSer": "BOLSA GRANDE CERTIFICADA",
+              "cUniMed": "77",
+              "dDesUniMed": "UNI",
+              "dCantProSer": "1",
+              "cPaisOrig": "PRY",
+              "dDesPaisOrig": "Paraguay",
+              "gValorItem": {
+                "dPUniProSer": "300",
+                "dTotBruOpeItem": "300",
+                "gValorRestaItem": {
+                  "dDescItem": "0",
+                  "dDescGloItem": "0",
+                  "dAntPreUniIt": "0",
+                  "dAntGloPreUniIt": "0",
+                  "dTotOpeItem": "300"
+                }
+              },
+              "gCamIVA": {
+                "iAfecIVA": "1",
+                "dDesAfecIVA": "Gravado IVA",
+                "dPropIVA": "100",
+                "dTasaIVA": "10",
+                "dBasGravIVA": "272.72727273",
+                "dLiqIVAItem": "27.27272727",
+                "dBasExe": "0"
+              }
+            }
+          ],
+          "gCamEsp": [
+            {
+              "gGrupSup": [
+                {
+                  "dNomCaj": "GODOY RUIZ, HAIDA MA",
+                  "dVuelto": "0"
+                }
+              ]
+            }
+          ]
+        },
+        "gTotSub": {
+          "dSubExe": "0",
+          "dSubExo": "0",
+          "dSub5": "0",
+          "dSub10": "107.300",
+          "dTotOpe": "107.300",
+          "dTotDesc": "0",
+          "dTotDescGlotem": "0",
+          "dTotAntItem": "0",
+          "dTotAnt": "0",
+          "dPorcDescTotal": "0",
+          "dDescTotal": "0",
+          "dAnticipo": "0",
+          "dRedon": "0",
+          "dTotGralOpe": "107300",
+          "dIVA5": "0",
+          "dIVA10": "9.755",
+          "dLiqTotIVA5": "0",
+          "dLiqTotIVA10": "0",
+          "dTotIVA": "9.755",
+          "dBaseGrav5": "0",
+          "dBaseGrav10": "97545.45454545",
+          "dTBasGraIVA": "97545.45454545"
+        }
+      },
+      "Signature": {
+        "$": {
+          "xmlns": "http://www.w3.org/2000/09/xmldsig#"
+        },
+        "SignedInfo": {
+          "$": {
+            "xmlns": "http://www.w3.org/2000/09/xmldsig#",
+            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
+          },
+          "CanonicalizationMethod": {
+            "$": {
+              "Algorithm": "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+            }
+          },
+          "SignatureMethod": {
+            "$": {
+              "Algorithm": "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+            }
+          },
+          "Reference": {
+            "$": {
+              "URI": "#01800004027014001023601422026091612289692610"
+            },
+            "Transforms": [
+              {
+                "Transform": [
+                  {
+                    "$": {
+                      "Algorithm": "http://www.w3.org/2000/09/xmldsig#enveloped-signature"
+                    }
+                  },
+                  {
+                    "$": {
+                      "Algorithm": "http://www.w3.org/2001/10/xml-exc-c14n#"
+                    }
+                  }
+                ]
+              }
+            ],
+            "DigestMethod": {
+              "$": {
+                "Algorithm": "http://www.w3.org/2001/04/xmlenc#sha256"
+              }
+            },
+            "DigestValue": "d6B+xORhdk0nCU5lZ+yuFjxon+oCp98+reoBiwNLfMg="
+          }
+        },
+        "SignatureValue": "TI7vqDbK+cRPpayiIYxUILe+Lu8LxP6/TrztcJGSfDliWPwjxBnawYuwk/ZGTbacjFIvVM77eucQFLjBZBH29uzIz42ooWTfAy7F5pHW3edhyjzi5hRNF3Kd7+OV9RfFTDZK1o9lX2jz355H0SQHGt1rGHoOmsR3eW+iu+iF8oAAhlQyy1Bdov+oTMvPHGnQQP6jG7cRiV6a+ZZUvuiXb0Qy+z3kqQrin3u1oJL2/sqPOzj69cppPu5roWsqmueaAbH0IxBEeEMtlIUjUCOz4nGQAfgDpC7/Dz2vDAmD8Xfzzhku6n/OHohUTi3UQPcMWhxHbK4kif8ZEp2Cx4plAQ==",
+        "KeyInfo": {
+          "X509Data": {
+            "X509IssuerSerial": {
+              "X509IssuerName": "C=PY, O=DOCUMENTA S.A., SERIALNUMBER=RUC80050172-1, CN=CA-DOCUMENTA S.A.",
+              "X509SerialNumber": "8575941261045969654"
+            },
+            "X509Certificate": "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"
+          }
+        }
+      },
+      "gCamFuFD": {
+        "dCarQR": "https://ekuatia.set.gov.py/consultas/qr?nVersion=150&amp;Id=01800004027014001023601422026091612289692610&amp;dFeEmiDE=323032362d30392d31365431303a35373a3137&amp;dRucRec=2482405&amp;dTotGralOpe=107300&amp;dTotIVA=9754.54545455&amp;cItems=4&amp;DigestValue=6436422b784f5268646b306e4355356c5a2b7975466a786f6e2b6f437039382b72656f4269774e4c664d673d&amp;IdCSC=0001&amp;cHashQR=8750ab0f102c1cc31b3a7e15581a15b9564d37327c6d810d94acdaa8c08caef1"
+      }
+    },
+    "letras": "CIENTO SIETE MIL TRESCIENTOS  GUARANIES ",
+    "tipComprobante": "FCO",
+    "serComprobante": "S02-028",
+    "nroComprobante": 183068,
+    "totalCobro": 107300
+  }
+}

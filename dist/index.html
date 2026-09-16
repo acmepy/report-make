@@ -1,32 +1,60 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/report/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Report Make</title>
-    <script type="module" crossorigin src="/report/assets/index-DjgSjapO.js"></script>
-    <link rel="modulepreload" crossorigin href="/report/assets/rolldown-runtime-Bh1tDfsg.js">
-    <link rel="modulepreload" crossorigin href="/report/assets/codemirror-CCrc_tIV.js">
-    <link rel="modulepreload" crossorigin href="/report/assets/vendor-B0OaCWiV.js">
-    <link rel="modulepreload" crossorigin href="/report/assets/pdfmake-bv7Ij9ry.js">
-    <link rel="modulepreload" crossorigin href="/report/assets/pdfmake-fonts-Cfh1-GXb.js">
-    <link rel="stylesheet" crossorigin href="/report/assets/index-CJ3q95tI.css">
+    <script type="module" crossorigin src="./assets/index-DXzpLh62.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-Bh1tDfsg.js">
+    <link rel="modulepreload" crossorigin href="./assets/codemirror-CCrc_tIV.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-BcZIAW85.js">
+    <link rel="modulepreload" crossorigin href="./assets/pdfmake-bv7Ij9ry.js">
+    <link rel="modulepreload" crossorigin href="./assets/pdfmake-fonts-Cfh1-GXb.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-D9tk-HAW.css">
   </head>
 
   <body>
     <div id="app">
       <div id="toolbar">
         <div id="toolbar-title">
-          <span class="app-name">PDFMake Offline</span>
+          <span class="app-name">Report Make</span>
           <span id="app-version" class="app-version">v1.0.0</span>
         </div>
-        <button id="btnGenerar">Generar PDF</button>
+        <div class="toolbar-group" role="group" aria-label="Plantillas">
+          <select id="templates" aria-label="Plantilla" title="Seleccionar plantilla"></select>
+          <select id="actions" aria-label="Acciones de plantilla" title="Acciones de plantilla">
+            <option value="">Acciones</option>
+            <option value="copy">Copiar</option>
+            <option value="rename">Renombrar</option>
+            <option value="delete">Eliminar</option>
+          </select>
+        </div>
+        <div class="toolbar-group" role="group" aria-label="Generación y sincronización">
+          <button id="btnGenerar" class="icon-button" type="button" title="Generar PDF" aria-label="Generar PDF">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 3H5v18h14V9z M13 3v6h6"/><path d="m9 12 5 3-5 3z"/></svg>
+          </button>
+          <button id="save" class="icon-button" type="button" title="Guardar en servidor (Ctrl+S / Cmd+S)" aria-label="Guardar en servidor">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/></svg>
+          </button>
+          <button id="download" class="icon-button" type="button" title="Descargar del servidor" aria-label="Descargar del servidor">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v13m-5-5 5 5 5-5M4 15v6h16v-6"/></svg>
+          </button>
+        </div>
+        <span id="sync-status" role="status"></span>
       </div>
 
       <div id="workspace">
-        <div id="editor"></div>
+        <div id="editing">
+          <div id="editor-tabs">
+            <button id="code-tab" aria-pressed="true">Código</button>
+            <button id="data-tab" aria-pressed="false">Datos de prueba</button>
+            <button id="format-json" type="button" hidden>Formatear JSON</button>
+          </div>
+          <div id="editor"></div>
+          <div id="data-editor" hidden></div>
+        </div>
         <div
           id="workspace-divider"
           role="separator"

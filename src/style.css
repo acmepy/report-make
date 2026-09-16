@@ -35,17 +35,19 @@ body {
 #app {
   height: 100vh;
   display: grid;
-  grid-template-rows: 48px 1fr;
+  grid-template-rows: auto 1fr;
   background: var(--bg);
   color: var(--text);
 }
 
 #toolbar {
-  height: 48px;
+  min-height: 48px;
+  flex-wrap: wrap;
+  gap: 8px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
+  justify-content: flex-start;
+  padding: 8px 14px;
   box-sizing: border-box;
   background: var(--toolbar-bg);
   border-bottom: 1px solid var(--border);
@@ -66,6 +68,81 @@ body {
   overflow: hidden;
   background: var(--panel);
 }
+
+#editing { min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+#editor, #data-editor { flex: 1; min-height: 0; overflow: hidden; }
+[hidden] { display: none !important; }
+#editor-tabs { display: flex; gap: 6px; padding: 6px; }
+#editor-tabs { flex-wrap: wrap; }
+#format-json { margin-left: auto; cursor: pointer; }
+#editor-tabs [aria-pressed="true"] { border-color: #438ad1; }
+#toolbar button, #toolbar select, #editor-tabs button {
+  padding: 7px; border: 1px solid var(--border); border-radius: 5px;
+  background: var(--button-bg); color: var(--text);
+}
+button:disabled, select:disabled { opacity: .5; }
+#sync-status { font-size: 12px; padding: 4px; }
+#templates { max-width: 220px; }
+
+.toolbar-group {
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 100%;
+}
+
+#toolbar .toolbar-group > button,
+#toolbar .toolbar-group > select {
+  position: relative;
+  min-height: 34px;
+  margin: 0;
+  border-radius: 0;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#toolbar .toolbar-group > :first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+#toolbar .toolbar-group > :last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+#toolbar .toolbar-group > :not(:first-child) {
+  margin-left: -1px;
+}
+
+#toolbar .toolbar-group > :hover:not(:disabled) {
+  background: var(--button-hover);
+}
+
+#toolbar .toolbar-group > :focus-visible {
+  z-index: 1;
+  outline: 2px solid #438ad1;
+  outline-offset: 1px;
+}
+
+#toolbar .toolbar-group > :disabled { cursor: default; }
+#toolbar .toolbar-group > .icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  padding: 7px;
+}
+.icon-button svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#toolbar-title { margin-right: 8px; }
+#sync-status { margin-left: auto; }
 
 #workspace-divider {
   position: relative;
@@ -121,6 +198,7 @@ body {
 
 #console-panel {
   height: var(--console-height, 180px);
+  flex-shrink: 0;
   min-height: 96px;
   display: flex;
   flex-direction: column;
