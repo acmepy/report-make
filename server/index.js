@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomUUID } from 'node:crypto';
 import { templateId, nameTaken } from './template-name.js';
+import { extractVariables } from './template-variables.js';
 
 const dist = fileURLToPath(new URL('../dist/', import.meta.url));
 const queues = new Map();
@@ -21,7 +22,9 @@ export function reportMake({ templatesDir } = {}) {
         typeof value.code !== 'string' || !Object.hasOwn(value, 'data')) {
       throw fail(400, 'Se requieren name, code y data');
     }
-    return { name: value.name.trim(), code: value.code, data: value.data };
+    let variables;
+    try { variables = extractVariables(value); } catch (error) { throw fail(400, error.message); }
+    return { ...variables, name: value.name.trim(), code: value.code, data: value.data };
   }
   async function location(id) {
     if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/.test(id)) throw fail(400, 'Identificador inválido');

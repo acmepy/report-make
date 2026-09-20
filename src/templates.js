@@ -1,7 +1,8 @@
 import { templateId, nameTaken, copyName } from '../server/template-name.js';
 import { createTemplateStorage } from './template-storage.js';
+import { extractVariables, validateVariables } from '../server/template-variables.js';
 
-export function setupTemplates({ getCode, getData, setDocuments, generate }) {
+export function setupTemplates({ getCode, getData, getVariables, setDocuments, generate }) {
   const storage = createTemplateStorage(location.pathname);
   const select = document.querySelector('#templates');
   const actions = document.querySelector('#actions');
@@ -33,7 +34,7 @@ export function setupTemplates({ getCode, getData, setDocuments, generate }) {
   function open(id) {
     selected = id;
     const record = current();
-    setDocuments(record?.code || '', record?.dataText || '{}');
+    setDocuments(record?.code || '', record?.dataText || '{}', record?.variablesText ?? JSON.stringify(record ? extractVariables(record) : {}, null, 2));
     persist(); render(); generate();
   }
   async function request(suffix = '', options = {}) {
@@ -62,7 +63,7 @@ export function setupTemplates({ getCode, getData, setDocuments, generate }) {
         if (local?.dirty) {
           if (!manual || !confirm(`«${local.name}» tiene cambios locales. ¿Reemplazarlos por la versión del servidor? Cancelar conserva el borrador.`)) return local;
         }
-        return { ...r, dataText: JSON.stringify(r.data, null, 2), dirty: false };
+        return { ...r, dataText: JSON.stringify(r.data, null, 2), variablesText: JSON.stringify(extractVariables(r), null, 2), dirty: false };
       });
       for (const local of records) if (!remote.some(r => r.id === local.id) && local.dirty) {
         if (local.revision && manual && confirm(`«${local.name}» fue eliminada del servidor. ¿Descartar el borrador? Cancelar lo conserva para copiarlo.`)) continue;
@@ -76,9 +77,10 @@ export function setupTemplates({ getCode, getData, setDocuments, generate }) {
   save.addEventListener('click', () => run(async () => {
     const record = current();
     const data = JSON.parse(record.dataText);
+    const variables = validateVariables(JSON.parse(record.variablesText || '{}'));
     const id = record.revision ? record.id : templateId(record.name);
     if (nameTaken(record.name, records, record.id)) throw new Error('Ya existe una plantilla con ese nombre. Copia el borrador con otro nombre.');
-    const saved = await request(`/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify({ name: record.name, code: record.code, data, revision: record.revision }) });
+    const saved = await request(`/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify({ ...variables, name: record.name, code: record.code, data, revision: record.revision }) });
     selected = saved.id;
     Object.assign(record, { id: saved.id, revision: saved.revision, dirty: false });
   }));
@@ -147,7 +149,7 @@ export function setupTemplates({ getCode, getData, setDocuments, generate }) {
     changed() {
       const record = current();
       if (!record) return;
-      record.code = getCode(); record.dataText = getData(); record.dirty = true;
+      record.code = getCode(); record.dataText = getData(); record.variablesText = getVariables(); record.dirty = true;
       message = ''; persist(); render();
     },
   };

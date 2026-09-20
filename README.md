@@ -82,6 +82,25 @@ La vista previa del PDF se actualizará automáticamente después de unos segund
 
 La pestaña **Datos de prueba** permite editar JSON, disponible como `data` dentro del código. También están disponibles `numero` y `fecha`.
 
+La pestaña **Variables** permite editar un objeto JSON con campos adicionales disponibles directamente en el reporte, por ejemplo `logo` y `header`. Estos campos se guardan en la raíz del archivo, junto a `name`, `code` y `data`:
+
+```json
+{
+  "name": "Factura",
+  "code": "{ content: [{ text: header.titulo }, { text: data.cliente }] };",
+  "data": { "cliente": "Juan" },
+  "header": { "titulo": "Factura de venta" }
+}
+```
+
+En **Variables** se edita únicamente `{ "header": { "titulo": "Factura de venta" } }`. Se puede añadir `logo` como una cadena data URL (`data:image/png;base64,...`) y usar `{ image: logo, width: 100 }` en el código. Los valores admiten objetos, listas y otros valores JSON; no se evalúa código dentro de las variables.
+
+Los nombres usan letras ASCII, números, `_` o `$`, sin comenzar por un número. Se rechazan palabras reservadas de JavaScript, campos de la plantilla (`name`, `code`, `data`, `id`, `revision`), estados internos, los ayudantes `numero` y `fecha`, y nombres globales reservados. Los errores conservan el borrador, pero impiden generar o enviar hasta corregirlos.
+
+Las variables se guardan en IndexedDB, se copian y se conservan al renombrar. Modificarlas afecta la revisión del servidor. Quitarlas del objeto de Variables las elimina del archivo en el siguiente guardado. El límite actual de envío del middleware es de 2 MB por petición, incluidas las imágenes.
+
+**Datos de prueba** y **Variables** comparten el botón **Formatear JSON / Comprimir JSON**, que actúa sobre la pestaña visible.
+
 Por compatibilidad, también se admiten borradores anteriores con declaraciones JavaScript y una asignación o declaración de `dd`. Se conservan sin reescribir su código; las plantillas nuevas pueden usar directamente el objeto.
 
 - Los cambios en ambas pestañas se guardan en IndexedDB mediante `idb-keyval`, separados por ruta de montaje. Los datos inválidos se conservan como borrador, pero deben corregirse para previsualizar o enviar. La interfaz indica cuándo el guardado local sigue pendiente o falla.

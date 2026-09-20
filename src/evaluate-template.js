@@ -1,13 +1,17 @@
 // Compile first, then execute once: runtime errors must not trigger a retry.
-export function evaluateTemplate(code, data, numero, fecha) {
+import { validateVariables } from '../server/template-variables.js';
+
+export function evaluateTemplate(code, data, numero, fecha, variables = {}) {
+  validateVariables(variables);
+  const names = ['data', 'numero', 'fecha', ...Object.keys(variables)];
   const expression = code.trim().replace(/;+\s*$/, '');
   let evaluate;
   try {
-    evaluate = new Function('data', 'numero', 'fecha', `return (\n${expression}\n);`);
+    evaluate = new Function(...names, `return (\n${expression}\n);`);
   } catch (error) {
     if (!(error instanceof SyntaxError)) throw error;
     // Older templates contain statements followed by a declaration/assignment to dd.
-    evaluate = new Function('data', 'numero', 'fecha', `
+    evaluate = new Function(...names, `
       let dd;
       return (function () {
         ${code}
@@ -15,7 +19,7 @@ export function evaluateTemplate(code, data, numero, fecha) {
       })();
     `);
   }
-  const definition = evaluate(data, numero, fecha);
+  const definition = evaluate(data, numero, fecha, ...Object.values(variables));
   if (!definition || typeof definition !== 'object' || Array.isArray(definition)) {
     throw new Error('La plantilla debe devolver un objeto PDFMake. Usa { content: [...] } o, en el formato anterior, asigna el documento a dd.');
   }

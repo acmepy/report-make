@@ -87,14 +87,24 @@ const editor = new EditorView({
   parent: document.querySelector("#editor"),
 });
 
+let activeTab = 'code';
 const dataEditor = new EditorView({
   doc: '{}',
   extensions: [basicSetup, javascript(), ...(isDark ? [oneDark] : []), EditorView.updateListener.of(update => {
-    if (update.docChanged) updateJsonButton(update.state.doc.toString());
+    if (update.docChanged && activeTab === 'data') updateJsonButton(update.state.doc.toString());
     if (update.docChanged && !loadingDocuments) { templates?.changed(); generarPdfDebounced(); }
   })],
   parent: document.querySelector('#data-editor'),
 });
+const variablesEditor = new EditorView({
+  doc: '{}',
+  extensions: [basicSetup, javascript(), ...(isDark ? [oneDark] : []), EditorView.updateListener.of(update => {
+    if (update.docChanged && activeTab === 'variables') updateJsonButton(update.state.doc.toString());
+    if (update.docChanged && !loadingDocuments) { templates?.changed(); generarPdfDebounced(); }
+  })],
+  parent: document.querySelector('#variables-editor'),
+});
+const editors = { code: editor, data: dataEditor, variables: variablesEditor };
 function updateJsonButton(code) {
   document.querySelector('#format-json').textContent = /[\r\n]/.test(code.trim())
     ? 'Comprimir JSON' : 'Formatear JSON';
@@ -102,29 +112,34 @@ function updateJsonButton(code) {
 updateJsonButton(dataEditor.state.doc.toString());
 document.querySelector('#format-json').addEventListener('click', () => {
   try {
-    const original = dataEditor.state.doc.toString();
+    const jsonEditor = editors[activeTab];
+    const original = jsonEditor.state.doc.toString();
     const compress = /[\r\n]/.test(original.trim());
     const formatted = JSON.stringify(JSON.parse(original), null, compress ? undefined : 2);
     if (formatted !== original) {
-      dataEditor.dispatch({
-        changes: { from: 0, to: dataEditor.state.doc.length, insert: formatted },
+      jsonEditor.dispatch({
+        changes: { from: 0, to: jsonEditor.state.doc.length, insert: formatted },
         userEvent: 'input.format',
       });
     }
-    dataEditor.focus();
+    jsonEditor.focus();
   } catch (error) {
     console.error(`No se pudo cambiar el formato del JSON: ${error.message}`);
     alert(`El JSON contiene un error. No se modificaron los datos.\n\n${error.message}`);
   }
 });
 
-for (const name of ['code', 'data']) document.querySelector(`#${name}-tab`).addEventListener('click', () => {
+for (const name of ['code', 'data', 'variables']) document.querySelector(`#${name}-tab`).addEventListener('click', () => {
+  activeTab = name;
   document.querySelector('#editor').hidden = name !== 'code';
   document.querySelector('#data-editor').hidden = name !== 'data';
-  document.querySelector('#format-json').hidden = name !== 'data';
+  document.querySelector('#variables-editor').hidden = name !== 'variables';
+  document.querySelector('#format-json').hidden = name === 'code';
   document.querySelector('#code-tab').setAttribute('aria-pressed', String(name === 'code'));
   document.querySelector('#data-tab').setAttribute('aria-pressed', String(name === 'data'));
-  (name === 'code' ? editor : dataEditor).requestMeasure();
+  document.querySelector('#variables-tab').setAttribute('aria-pressed', String(name === 'variables'));
+  if (name !== 'code') updateJsonButton(editors[name].state.doc.toString());
+  editors[name].requestMeasure();
 });
 
 const viewer = document.querySelector("#viewer");
@@ -254,6 +269,7 @@ async function generarPdf() {
       JSON.parse(dataEditor.state.doc.toString()),
       numero,
       fecha,
+      JSON.parse(variablesEditor.state.doc.toString()),
     );
 
     const pdf = pdfMake.createPdf(docDefinition);
@@ -286,10 +302,12 @@ btnGenerar.addEventListener("click", generarPdf);
 templates = setupTemplates({
   getCode: () => editor.state.doc.toString(),
   getData: () => dataEditor.state.doc.toString(),
-  setDocuments(code, data) {
+  getVariables: () => variablesEditor.state.doc.toString(),
+  setDocuments(code, data, variables) {
     loadingDocuments = true;
     editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: code } });
     dataEditor.dispatch({ changes: { from: 0, to: dataEditor.state.doc.length, insert: data } });
+    variablesEditor.dispatch({ changes: { from: 0, to: variablesEditor.state.doc.length, insert: variables } });
     loadingDocuments = false;
   },
   generate: generarPdfDebounced,
