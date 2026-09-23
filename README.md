@@ -1,13 +1,16 @@
-# PDFMake Offline
+# Report Make
 
-Pequeña herramienta offline para diseñar y previsualizar reportes PDF utilizando PDFMake.
+Herramienta para diseñar y previsualizar reportes PDF en el navegador utilizando PDFMake, integrable en proyectos Node.js mediante un middleware Express. Las plantillas se almacenan en una carpeta del servidor y los borradores se guardan localmente en IndexedDB.
 
 ## Características
 
-* Editor de código con CodeMirror.
+* Editores con CodeMirror para Código, Datos de prueba y Variables.
 * Vista previa automática del PDF.
 * Tema claro/oscuro según la configuración del sistema.
-* Guardado automático del código en el navegador.
+* Guardado automático de borradores en IndexedDB con `idb-keyval`.
+* Selección, copia, renombrado y eliminación de plantillas, con control de conflictos al guardar.
+* Botones agrupados con iconos, tooltips y etiquetas accesibles.
+* Consola integrada y paneles redimensionables que recuerdan sus tamaños.
 * Sin dependencias de servicios externos.
 * Generación local de PDFs utilizando PDFMake.
 
@@ -25,6 +28,26 @@ npm start
 ```
 
 Abrir `http://localhost:3000/report/`. El servidor de ejemplo usa `examples/templates`, donde se incluye una plantilla inicial.
+
+`npm start` ejecuta Express y sirve la interfaz de `dist`; **no compila automáticamente**. Después de modificar la interfaz, ejecutar de nuevo `npm run build` y recargar el navegador. Si se modifica el middleware o el servidor de ejemplo, reiniciar `npm start`.
+
+## Desarrollo
+
+Ejecutar los dos procesos en terminales separadas:
+
+```bash
+# Terminal 1: API de plantillas
+npm start
+```
+
+```bash
+# Terminal 2: interfaz con recarga automática
+npm run dev
+```
+
+Abrir la URL que indique Vite. Vite reenvía `/api` a `http://localhost:3000/report/api`. Si aparece `ECONNREFUSED` en el proxy, comprobar que Express esté ejecutándose en el puerto 3000. Para trabajar desde la URL de Vite no es necesario recompilar la interfaz después de cada cambio.
+
+Los borradores del navegador se separan por origen y ruta de montaje: la interfaz de Vite y la servida en el puerto 3000 no comparten sus copias locales. Los cambios enviados al servidor sí se comparten mediante los archivos de plantillas.
 
 ## Integración con Express
 
@@ -55,8 +78,6 @@ Cada plantilla es un archivo JSON cuyo nombre determina el identificador, por ej
 Los identificadores admiten letras, números, guiones y guiones bajos (hasta 128 caracteres, comenzando por letra o número). No se recorren subcarpetas. En una carpeta vacía, agregar un primer archivo como el ejemplo para comenzar.
 
 Las plantillas nuevas generan el identificador a partir del nombre: **Factura contado** se guarda como `factura-contado.json`. Se convierten las letras a minúsculas, se eliminan acentos y se reemplazan espacios o signos por guiones. Los nombres equivalentes y las colisiones con archivos existentes se rechazan tanto localmente como en el servidor. Al copiar se sugiere un nombre disponible, como **Factura (copia 2)**. Las plantillas ya guardadas conservan su identificador y archivo; los borradores nuevos anteriores adoptan el identificador basado en el nombre al enviarse por primera vez. No se renombran archivos existentes automáticamente.
-
-Para desarrollar la interfaz ejecutar `npm run dev` junto con `npm start`. Vite reenvía `/api` al servidor de ejemplo en el puerto 3000.
 
 ## Compilación
 
@@ -101,9 +122,11 @@ Las variables se guardan en IndexedDB, se copian y se conservan al renombrar. Mo
 
 **Datos de prueba** y **Variables** comparten el botón **Formatear JSON / Comprimir JSON**, que actúa sobre la pestaña visible.
 
+El formato usa sangría de dos espacios; la compresión deja el JSON en una sola línea. Si el JSON es inválido, se informa el error sin modificarlo. Ambas pestañas requieren JSON estricto: claves y cadenas entre comillas dobles, sin comentarios ni comas finales.
+
 Por compatibilidad, también se admiten borradores anteriores con declaraciones JavaScript y una asignación o declaración de `dd`. Se conservan sin reescribir su código; las plantillas nuevas pueden usar directamente el objeto.
 
-- Los cambios en ambas pestañas se guardan en IndexedDB mediante `idb-keyval`, separados por ruta de montaje. Los datos inválidos se conservan como borrador, pero deben corregirse para previsualizar o enviar. La interfaz indica cuándo el guardado local sigue pendiente o falla.
+- Los cambios en las tres pestañas se guardan en IndexedDB mediante `idb-keyval`, separados por ruta de montaje. Los datos inválidos se conservan como borrador, pero deben corregirse para previsualizar o enviar. La interfaz indica cuándo el guardado local sigue pendiente o falla.
 - Las preferencias de tamaño de paneles siguen en `localStorage`. No se importan plantillas antiguas de `localStorage`: al iniciar por primera vez se descargan desde el servidor. Las claves anteriores no se eliminan, pero ya no se utilizan.
 - **Guardar en servidor**, también `Ctrl+S` o `Cmd+S`, envía la plantilla seleccionada.
 - **Descargar del servidor** actualiza la lista y pide confirmación antes de reemplazar borradores. La descarga automática inicial los conserva.
@@ -111,6 +134,22 @@ Por compatibilidad, también se admiten borradores anteriores con declaraciones 
 - **Acciones → Renombrar plantilla** cambia el nombre localmente y marca la plantilla pendiente. **Guardar en servidor** actualiza también el nombre del archivo, conservando el código y los datos. Se rechazan nombres duplicados y revisiones desactualizadas; si falla, se conserva el borrador. Los archivos antiguos mantienen su identificador hasta renombrarlos explícitamente.
 - **Acciones → Eliminar plantilla** pide confirmación y elimina el archivo antes de retirar la copia local. Si falla, conserva el borrador.
 - Ante un conflicto de revisión, descargar para elegir la versión del servidor o conservar el borrador y copiarlo con otro nombre.
+
+## Barra superior y paneles
+
+El selector muestra la plantilla actual y marca con `●` las que tienen cambios pendientes de envío. El menú **Acciones** ofrece Copiar, Renombrar y Eliminar. Los botones de generación y sincronización muestran iconos; al pasar el puntero se muestra un tooltip:
+
+| Icono | Acción |
+| --- | --- |
+| Documento con triángulo | Generar PDF de la plantilla actual. |
+| Flecha hacia arriba | Guardar en servidor (`Ctrl+S` o `Cmd+S`). |
+| Flecha hacia abajo | Descargar las plantillas del servidor. |
+
+Arrastrar el separador vertical para ajustar el ancho del editor y del visor PDF, o el horizontal para ajustar la altura de la consola. Con el separador enfocado también se pueden usar las flechas del teclado; `Shift` permite ajustes mayores. Los tamaños se recuerdan por ruta de montaje y se adaptan al espacio disponible al volver a abrir la aplicación.
+
+La consola bajo el visor muestra `console.log`, `info`, `warn`, `error` y `debug`, incluidos los errores al generar el reporte. Conserva los últimos 500 mensajes, distingue advertencias y errores por color y permite vaciar el panel con **Limpiar**. Los mensajes también siguen apareciendo en la consola del navegador.
+
+## Limitaciones y pruebas
 
 La primera versión está pensada para un único proceso que escriba las plantillas. No ofrece bloqueo distribuido entre procesos ni frente a escrituras externas simultáneas. El código de las plantillas se ejecuta en el navegador y debe proceder de autores de confianza.
 
@@ -121,3 +160,5 @@ Las pruebas de integración se ejecutan con `npm test`, después de compilar.
 * PDFMake
 * CodeMirror
 * Vite
+* Node.js y Express
+* IndexedDB mediante `idb-keyval`
