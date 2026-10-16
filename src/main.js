@@ -1,4 +1,5 @@
 import "./style.css";
+import { captureGlobalErrors } from './global-errors.js';
 
 const consoleOutput = document.querySelector("#console-output");
 const clearConsoleButton = document.querySelector("#btnLimpiarConsola");
@@ -14,22 +15,27 @@ function formatConsoleValue(value) {
   }
 }
 
+function appendConsoleMessage(method, values) {
+  const line = document.createElement('div');
+  line.className = `console-${method}`;
+  line.textContent = `[${method}] ${values.map(formatConsoleValue).join(' ')}`;
+  consoleOutput.append(line);
+  if (consoleOutput.childElementCount > 500) consoleOutput.firstElementChild.remove();
+  consoleOutput.scrollTop = consoleOutput.scrollHeight;
+}
+
 function installConsolePanel() {
   for (const method of ["log", "info", "warn", "error", "debug"]) {
     const original = console[method].bind(console);
     console[method] = (...values) => {
       original(...values);
-      const line = document.createElement("div");
-      line.className = `console-${method}`;
-      line.textContent = `[${method}] ${values.map(formatConsoleValue).join(" ")}`;
-      consoleOutput.append(line);
-      if (consoleOutput.childElementCount > 500) consoleOutput.firstElementChild.remove();
-      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      appendConsoleMessage(method, values);
     };
   }
 }
 
 installConsolePanel();
+captureGlobalErrors(window, error => appendConsoleMessage('error', [error]));
 clearConsoleButton.addEventListener("click", () => {
   consoleOutput.replaceChildren();
 });
