@@ -137,6 +137,15 @@ Por compatibilidad, también se admiten borradores anteriores con declaraciones 
 
 ## Barra superior y paneles
 
+Cada plantilla incluye dos metadatos automáticos calculados por el servidor:
+
+- `templateHash`: SHA-256 del texto exacto de `code`, incluidos espacios, comentarios y saltos de línea. No incluye el nombre, los datos de prueba ni las variables. Dos códigos idénticos tienen el mismo hash.
+- `reportVersion`: entero que comienza en 1 y aumenta en cada guardado en servidor únicamente si cambió el hash de `code`. Cambiar solo datos, variables o nombre no aumenta la versión. Volver a un código anterior genera otra versión, aunque su hash coincida con uno anterior.
+
+Se almacenan en la raíz del archivo, fuera de Variables. El servidor ignora los valores enviados por el cliente y calcula los suyos. Las plantillas sin estos metadatos parten de la versión 1; se incorporan al archivo en su siguiente guardado. Una copia empieza una numeración nueva en 1 al enviarse por primera vez.
+
+La barra superior muestra `v1`, `v2`, etc. El tooltip de la versión contiene el hash completo del último guardado en el servidor; mientras hay cambios locales, estos metadatos siguen correspondiendo al guardado anterior. `revision` continúa controlando conflictos sobre el archivo completo, independientemente de `reportVersion`. Esta numeración no almacena un historial recuperable y requiere guardar mediante el middleware para registrar cambios de código.
+
 El selector muestra la plantilla actual y marca con `●` las que tienen cambios pendientes de envío. El menú **Acciones** ofrece Copiar, Renombrar y Eliminar. Los botones de generación y sincronización muestran iconos; al pasar el puntero se muestra un tooltip:
 
 | Icono | Acción |

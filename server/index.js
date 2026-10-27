@@ -9,6 +9,7 @@ import { extractVariables } from './template-variables.js';
 const dist = fileURLToPath(new URL('../dist/', import.meta.url));
 const queues = new Map();
 const fail = (status, message) => Object.assign(new Error(message), { status });
+const codeHash = code => createHash('sha256').update(code, 'utf8').digest('hex');
 
 export function reportMake({ templatesDir } = {}) {
   if (!templatesDir) throw new TypeError('templatesDir es obligatorio');
@@ -38,7 +39,14 @@ export function reportMake({ templatesDir } = {}) {
   async function read(id) {
     try {
       const raw = await fs.readFile(await location(id), 'utf8');
-      return { id, ...validate(JSON.parse(raw)), revision: createHash('sha256').update(raw).digest('hex') };
+      const stored = JSON.parse(raw);
+      const value = validate(stored);
+      return {
+        id, ...value,
+        templateHash: codeHash(value.code),
+        reportVersion: Number.isSafeInteger(stored.reportVersion) && stored.reportVersion > 0 ? stored.reportVersion : 1,
+        revision: createHash('sha256').update(raw).digest('hex'),
+      };
     } catch (error) { if (error.code === 'ENOENT') return null; throw error; }
   }
   async function locked(id, work) {
@@ -74,6 +82,11 @@ export function reportMake({ templatesDir } = {}) {
           res.status(204).end();
         } else {
           const value = validate(req.body);
+          value.templateHash = codeHash(value.code);
+          value.reportVersion = current
+            ? current.reportVersion + (current.templateHash !== value.templateHash ? 1 : 0)
+            : 1;
+          if (!Number.isSafeInteger(value.reportVersion)) throw fail(400, 'La versión del reporte excede el límite permitido');
           // Existing IDs stay stable. New files must use the normalized name.
           let normalized;
           try { normalized = templateId(value.name); } catch (error) { throw fail(400, error.message); }

@@ -23,6 +23,10 @@ export function setupTemplates({ getCode, getData, getVariables, setDocuments, g
     select.replaceChildren(...records.map(r => new Option(`${r.dirty ? '● ' : ''}${r.name}`, r.id, false, r.id === selected)));
     if (!records.length) select.add(new Option('Sin plantillas', ''));
     const record = current();
+    const version = document.querySelector('#template-version');
+    version.textContent = record?.revision && record.reportVersion ? `v${record.reportVersion}` : record ? 'Sin versión guardada' : '';
+    version.title = record?.templateHash && record.revision
+      ? `Último guardado en servidor · SHA-256 de code: ${record.templateHash}` : 'La versión se asigna al guardar en el servidor';
     select.disabled = busy || !records.length;
     actions.disabled = busy || !record;
     save.disabled = busy || !record?.dirty;
@@ -82,7 +86,7 @@ export function setupTemplates({ getCode, getData, getVariables, setDocuments, g
     if (nameTaken(record.name, records, record.id)) throw new Error('Ya existe una plantilla con ese nombre. Copia el borrador con otro nombre.');
     const saved = await request(`/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify({ ...variables, name: record.name, code: record.code, data, revision: record.revision }) });
     selected = saved.id;
-    Object.assign(record, { id: saved.id, revision: saved.revision, dirty: false });
+    Object.assign(record, { id: saved.id, revision: saved.revision, templateHash: saved.templateHash, reportVersion: saved.reportVersion, dirty: false });
   }));
   download.addEventListener('click', () => refresh(true));
   actions.addEventListener('change', () => {
@@ -112,7 +116,7 @@ export function setupTemplates({ getCode, getData, getVariables, setDocuments, g
         id = templateId(name);
         if (nameTaken(name, records)) throw new Error('Ya existe una plantilla con ese nombre o nombre de archivo. Elige otro nombre.');
       } catch (error) { alert(error.message); return; }
-      const copy = { ...record, id, name: name.trim(), revision: null, dirty: true };
+      const copy = { ...record, id, name: name.trim(), revision: null, templateHash: null, reportVersion: null, dirty: true };
       records.push(copy); message = ''; open(copy.id);
     } else if (action === 'delete' && confirm(`¿Eliminar «${record.name}»${record.revision ? ' del servidor y de este navegador' : ' de este navegador'}? Se perderán sus cambios pendientes.`)) {
       run(async () => {
